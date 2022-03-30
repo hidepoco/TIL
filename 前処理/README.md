@@ -27,3 +27,8 @@ C_order = C_period.groupby('article_id')['article_id'].count().sort_values(ascen
 ```
 C_period[C_period['article_id'] == 866731001].count()
 ```
+## 標準化
+- 学習データで平均と分散を計算し、それを用いて学習データ・テストデータを変換する
+```
+from slke
+```
