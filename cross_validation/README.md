@@ -60,4 +60,5 @@ df = pd.DataFrame(X, columns=[f"f_{i}" for i in range(X.shape[1])])
 df.loc[:, "target"] = y
 
 df = create_folds(df)
+引用：kagglegrandmasterに学ぶ機械学習実践アプローチ第2章
 ```
