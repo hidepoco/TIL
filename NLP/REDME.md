@@ -32,3 +32,39 @@ def unigram(s):
 def bigram(s):
   return [(s[i],s[i+1]) for i in range(len(s)) if i+1 <len(s)]
 ```
+
+
+# n-gram関数
+```
+def ngram(s,n):
+  """ngramを計算して返却
+    Args:
+        s(str): 解析対象文字列
+        n(int):n
+    Returns:
+        ngram(list):ngramリスト
+    """
+  ngram = []
+  for i in range(len(s)):
+    if i + n >=len(s):
+      break
+    tpl = tuple()
+    for j in range(n):
+      tpl += (s[i+j],)
+    ngram.append(tpl)
+  return ngram
+
+s = "新型コロナウイルスのワクチンが早く欲しい。"
+print(ngram(s, 3))
+```
+
+
+# 文字列とリストを渡すとリスト内の要素を文字列から削除する関数
+```
+def exclude(s,list):
+  for exc in list:
+    s = s.replace(exc,"")
+  return s
+exclude_list = ["失敗"]
+exclude("私の辞書に「失敗」という文字はない、「成功」に向かって一つ実験結果を得ただけだ。",exclude_list)
+```
