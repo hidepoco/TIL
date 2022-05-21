@@ -26,3 +26,9 @@ s = "新型コロナのワクチンが早く欲しい"
 def unigram(s):
   return [(s[i],) for i in range(len(s))]
 ```
+
+```
+# 2-gram
+def bigram(s):
+  return [(s[i],s[i+1]) for i in range(len(s)) if i+1 <len(s)]
+```
