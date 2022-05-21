@@ -1,0 +1,6 @@
+simularities = model.most_similar("United_States")
+pd.DataFrame(
+    simularities,
+    columns = ['単語', '類似度'],
+    index = np.arange(len(simularities)) + 1
+)
