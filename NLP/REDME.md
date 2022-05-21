@@ -1,14 +1,20 @@
+## 類似度の高い単語10件取得
+- indexは1から表示させる
+```
 simularities = model.most_similar("United_States")
 pd.DataFrame(
     simularities,
     columns = ['単語', '類似度'],
     index = np.arange(len(simularities)) + 1
 )
-
-
-## 期間を指定する前処理
-- 19年9月23日〜29日のデータの抽出
 ```
-A_period = purchase_article[(purchase_article['datetime'] > dt.datetime(2019,9,22)) 
-& (purchase_article['datetime'] < dt.datetime(2019,9,30))]
+## 加法構成性によるアナロジー
+- Spain”の単語ベクトルから”Madrid”のベクトルを引き，”Athens”のベクトルを足したベクトルを計算し，そのベクトルと類似度の高い10語とその類似度を出力せよ．
+```
+simularities = model.most_similar(positive=['Spain', 'Athens'], negative=['Madrid'])
+pd.DataFrame(
+    simularities,
+    columns = ['単語', '類似度'],
+    index = np.arange(len(simularities)) + 1
+)
 ```
