@@ -18,3 +18,11 @@ pd.DataFrame(
     index = np.arange(len(simularities)) + 1
 )
 ```
+## n-gram
+- 文章の単語単位の分割
+- nが増えてもn2と同様のパターンで増やしていく
+```
+s = "新型コロナのワクチンが早く欲しい"
+def unigram(s):
+  return [(s[i],) for i in range(len(s))]
+```
