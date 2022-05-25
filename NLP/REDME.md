@@ -68,3 +68,12 @@ def exclude(s,list):
 exclude_list = ["失敗"]
 exclude("私の辞書に「失敗」という文字はない、「成功」に向かって一つ実験結果を得ただけだ。",exclude_list)
 ```
+# 正解ラベルの作成
+- カテゴリ名とリストの検索マップをcat2idとして字書型で格納
+- 辞書内包表記
+- https://atmarkit.itmedia.co.jp/ait/articles/2107/13/news019.html
+```
+categories = list(set(df['カテゴリ']))
+cat2id = {cat:i, cat in enumerate(categories)}
+print(cat2id.items())
+```
