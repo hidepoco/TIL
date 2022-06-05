@@ -145,3 +145,192 @@ sns.heatmap(pca.components_,
            ax=ax)
 plt.show()
 ```
+![image](https://user-images.githubusercontent.com/73774284/172050279-1abc54ef-1211-4b42-a5c2-6ecc5e7253f6.png)
+
+## スクリープロットで次元削減数を探索する
+
+```
+# ワインデータの取得
+df_wine=pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data", header=None)
+df_wine.columns = ["class", "Alcohol", "Malic acid", "Ash", "Alcalinity of ash","Magnesium", "Total phenols", "Flavanoids", "Nonflavanoid phenols","Proanthocyanins", "Color intensity", "Hue","OD280/OD315 of diluted wines", "Proline"]
+display(df_wine.shape)
+display(df_wine.head())
+```
+```
+# ワインデータのPCA結果
+from sklearn.decomposition import PCA
+from sklearn import preprocessing
+import numpy as np
+sc=preprocessing.StandardScaler()
+X = df_wine.iloc[:, 1:]
+X_norm=sc.fit_transform(X)
+ 
+pca = PCA(random_state=0)
+X_pc = pca.fit_transform(X_norm)
+df_pca = pd.DataFrame(X_pc, columns=["PC{}".format(i + 1) for i in range(len(X_pc[0]))])
+print("主成分の数: ", pca.n_components_)
+print("保たれている情報: ", round(np.sum(pca.explained_variance_ratio_),2))
+display(df_pca.head())
+```
+![image](https://user-images.githubusercontent.com/73774284/172050346-bbf19d81-7ebc-480d-87b0-32d77538521b.png)
+
+```
+# 固有値の確認
+# 標準化している際、固有値が固有値が1以上のものを使うというのがシンプルな方法
+pd.DataFrame(np.round(pca.explained_variance_, 2), index=["PC{}".format(x + 1) for x in range(len(df_pca.columns))], columns=["固有値"])
+```
+```
+# 固有値のスクリープロット
+# 先ほど確認した固有値1のラインをラインを引く
+# 安定する（今回のケースでは今回のケースでは8）までを利用することが望ましい
+line = np.ones(14)
+plt.plot(np.append(np.nan, pca.explained_variance_), "s-")
+plt.plot(line, "s-")
+plt.xlabel("PC")
+plt.ylabel("explained_variance")
+plt.xticks( np.arange(1, 14, 1))
+plt.grid()
+plt.show()
+```
+![image](https://user-images.githubusercontent.com/73774284/172050406-3b9bb390-9875-4c4c-b5a4-829ea4a73d65.png)
+
+## 寄与率で次元削減数を探索
+```
+# 寄与率
+pd.DataFrame(np.round(pca.explained_variance_ratio_,2), index=["PC{}".format(x + 1) for x in range(len(df_pca.columns))], columns=["寄与率"])
+```
+![image](https://user-images.githubusercontent.com/73774284/172050486-d52b863d-e7bb-4954-abd5-8ab40fadbd19.png)
+
+```
+# 累積寄与率の可視化
+import matplotlib.ticker as ticker
+# 基準線の作成
+line = np.full(14, 0.9)
+plt.gca().get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+plt.plot([0] + list( np.cumsum(pca.explained_variance_ratio_)), "-o")
+plt.xlabel("PC")
+plt.ylabel("cumulative contribution rate")
+plt.yticks( np.arange(0, 1.1, 0.1))
+plt.plot(line, "s-") 
+plt.grid()
+plt.show()
+```
+![image](https://user-images.githubusercontent.com/73774284/172050534-b832603b-2df1-43e2-b015-12f3627a9eef.png)
+
+```
+# 累積寄与率を指定してPCAを実行
+sc=preprocessing.StandardScaler()
+X = df_wine.iloc[:, 1:]
+X_norm=sc.fit_transform(X)
+# 累積寄与率が寄与率が90%を超えるPC8までを結果として表示
+pca = PCA(n_components=0.9, random_state=0)
+X_pc = pca.fit_transform(X_norm)
+df_pca = pd.DataFrame(X_pc, columns=["PC{}".format(i + 1) for i in range(len(X_pc[0]))])
+print("主成分の数: ", pca.n_components_) 
+print("保たれている情報: ", round(np.sum(pca.explained_variance_ratio_),2))
+display(df_pca.head())
+```
+![image](https://user-images.githubusercontent.com/73774284/172050587-3aa9cad9-a527-4e90-85b7-3a64aa005a4e.png)
+
+## UMAPによる次元削減
+- 処理速度が早く四次元以上の圧縮にも対応している次元削減のトレンド手法の一つ
+- 非線形次元削減にも使用できる
+```
+!pip3 install umap-learn
+
+# UMAPとt-SNEを実行
+import umap
+ 
+start_time_tsne = time.time()
+X_reduced = TSNE(n_components=2, random_state=0).fit_transform(digits.data)
+interval_tsne = time.time() - start_time_tsne
+ 
+start_time_umap = time.time()
+embedding = umap.UMAP(n_components=2, random_state=0).fit_transform(digits.data)
+interval_umap = time.time() - start_time_umap
+ 
+print("tsne : {}s".format(np.round(interval_tsne,2)))
+print("umap : {}s".format(np.round(interval_umap,2)))
+```
+
+```
+# UMAPとt-SNEの結果
+plt.figure(figsize=(10,8))
+plt.subplot(2, 1, 1)
+for each_label in digits.target_names:
+    c_plot_bool = digits.target == each_label
+    plt.scatter(X_reduced[c_plot_bool, 0], X_reduced[c_plot_bool, 1], label="{}".format(each_label))
+plt.legend(loc="upper right")
+plt.xlabel("tsne-1")
+plt.ylabel("tsne-2")
+ 
+plt.subplot(2, 1, 2)
+for each_label in digits.target_names:
+    c_plot_bool = digits.target == each_label
+    plt.scatter(embedding[c_plot_bool, 0], embedding[c_plot_bool, 1], label="{}".format(each_label))
+plt.legend(loc="upper right")
+plt.xlabel("umap-1")
+plt.ylabel("umap-2")
+plt.show()
+```
+![image](https://user-images.githubusercontent.com/73774284/172050829-fa9538af-929c-4626-a4d6-d670015417b6.png)
+
+## Umapで最適なn_neighborsを探索
+- 大きくするとマクロな、小さくするとミクロな構造を結果に反映反映
+- 2~100の間の値を選択が推奨。デフォルトはデフォルトは15で設定されている
+```
+# 最適な最適なn_neighborsを探索する関数（二次元表示）
+# n_neighborsを2,5,30,50,100ごとにUMAPを実施して結果を二次元に可視化する関数
+def create_2d_umap(target_X, y, y_labels, n_neighbors_list= [2, 15, 30, 50, 100]):
+    fig, axes = plt.subplots(nrows=1, ncols=len(n_neighbors_list),figsize=(5*len(n_neighbors_list), 4))
+    for i, (ax, n_neighbors) in enumerate(zip(axes.flatten(), n_neighbors_list)):
+        start_time = time.time()
+        # 二次元から変更する際はする際は2の値を変更変更
+        mapper = umap.UMAP(n_components=2, random_state=0, n_neighbors=n_neighbors)
+        Y = mapper.fit_transform(target_X)
+        for each_label in y_labels:
+            c_plot_bool = y == each_label
+            ax.scatter(Y[c_plot_bool, 0], Y[c_plot_bool, 1], label="{}".format(each_label))
+        end_time = time.time()
+        ax.legend(loc="upper right")
+        ax.set_title("n_neighbors: {}".format(n_neighbors))
+        print("n_neighbors {} is {:.2f} seconds.".format(n_neighbors, end_time - start_time))
+    plt.show()
+```
+```
+# UMAPの結果
+create_2d_umap(digits.data, digits.target, digits.target_names)
+```
+![image](https://user-images.githubusercontent.com/73774284/172050927-f88213ad-49a5-4e55-b0e9-46ccf90331ab.png)
+
+```
+# 最適な最適なn_neighborsを探索する関数（3次元表示）
+def create_3d_umap(target_X, y, y_labels, n_neighbors_list= [2, 15, 30, 50, 100]):
+    fig = plt.figure(figsize=(5*len(n_neighbors_list),4))
+    for i, n_neighbors in enumerate(n_neighbors_list):
+        ax = fig.add_subplot(1, len(n_neighbors_list), i+1, projection="3d")
+        start_time = time.time()
+        mapper = umap.UMAP(n_components=3, random_state=0, n_neighbors=n_neighbors)
+        Y = mapper.fit_transform(target_X)
+        for each_label in y_labels:
+            c_plot_bool = y == each_label
+            ax.scatter(Y[c_plot_bool, 0], Y[c_plot_bool, 1], label="{}".format(each_label))
+        end_time = time.time()
+        ax.legend(loc="upper right")
+        ax.set_title("n_neighbors_list: {}".format(n_neighbors))
+        print("n_neighbors_list {} is {:.2f} seconds.".format(n_neighbors, end_time - start_time))
+    plt.show()
+    ```
+    ```
+    create_3d_umap(digits.data, digits.target, digits.target_names)
+    ```
+    ![image](https://user-images.githubusercontent.com/73774284/172050968-3c1ecd56-eebf-432e-9646-dce6bee7c04b.png)
+
+## PCAとUMAPを組み合わせて次元削減を実施実施
+- 高次元データを扱う場合PCA結果をさらにUMAPで次元削減することで良い結果になるケースがある
+
+
+    
+    
+    
+    
