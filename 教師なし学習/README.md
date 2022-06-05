@@ -320,17 +320,35 @@ def create_3d_umap(target_X, y, y_labels, n_neighbors_list= [2, 15, 30, 50, 100]
         ax.set_title("n_neighbors_list: {}".format(n_neighbors))
         print("n_neighbors_list {} is {:.2f} seconds.".format(n_neighbors, end_time - start_time))
     plt.show()
-    ```
-    ```
-    create_3d_umap(digits.data, digits.target, digits.target_names)
-    ```
-    ![image](https://user-images.githubusercontent.com/73774284/172050968-3c1ecd56-eebf-432e-9646-dce6bee7c04b.png)
+```
+    
+```
+create_3d_umap(digits.data, digits.target, digits.target_names)
+```
+   
+![image](https://user-images.githubusercontent.com/73774284/172050968-3c1ecd56-eebf-432e-9646-dce6bee7c04b.png)
 
 ## PCAとUMAPを組み合わせて次元削減を実施実施
 - 高次元データを扱う場合PCA結果をさらにUMAPで次元削減することで良い結果になるケースがある
+```
+# PCAの結果
+# 累積寄与率が累積寄与率が99%になるなるPC41までの結果が表示される
+pca = PCA(n_components=0.99, random_state=0)
+X_pc = pca.fit_transform(digits.data)
+df_pca = pd.DataFrame(X_pc, columns=["PC{}".format(i + 1) for i in range(len(X_pc[0]))])
+print("主成分の数: ", pca.n_components_) 
+print("保たれている情報: ", np.sum(pca.explained_variance_ratio_))
+display(df_pca.head())
+```
+![image](https://user-images.githubusercontent.com/73774284/172051107-f66deb66-baa7-4030-82e5-367d54703db1.png)
 
+```
+# 左下のn_neighbors5の結果が良い
+create_2d_umap(digits.data, digits.target, digits.target_names, [5,10,15])
+create_2d_umap(df_pca, digits.target, digits.target_names, [5,10,15])
+```    
+![image](https://user-images.githubusercontent.com/73774284/172051165-81cc3d0f-d884-443a-af89-7b21a2ef77ff.png)
 
-    
     
     
     
