@@ -88,3 +88,60 @@ plt.suptitle("vbgmm_weights")
 plt.show
 ```
 ![image](https://user-images.githubusercontent.com/73774284/171982046-2b45b7a9-3d12-4cdc-9e70-6e948285224a.png)
+
+## 次元削減
+- データの可視化
+- データ容量の節約
+- 特徴量の作成
+
+## PCA
+```
+データのダウンロード
+import pandas as pd
+from sklearn.datasets import load_iris
+iris = load_iris()
+df=pd.DataFrame(iris.data, columns=iris.feature_names)
+df["target"] = iris.target
+df.loc[df["target"]==0, "target_name"] = "setosa"
+df.loc[df["target"]==1, "target_name"] = "versicolor"
+df.loc[df["target"]==2, "target_name"] = "virginica"
+df.head()
+```
+```
+# PCA結果
+from sklearn.decomposition import PCA
+import numpy as np
+pca = PCA(random_state=0)
+X_pc = pca.fit_transform(df.iloc[:, 0:4])
+df_pca = pd.DataFrame(X_pc, columns=["PC{}".format(i + 1) for i in range(len(X_pc[0]))])
+print("主成分の数: ", pca.n_components_) 
+print("保たれている情報: ", np.sum(pca.explained_variance_ratio_))
+display(df_pca.head())
+```
+![image](https://user-images.githubusercontent.com/73774284/172050141-1514a2c1-9a2d-43e5-8599-5a0daf6cf56c.png)
+
+```# PC1ととPC2を可視化
+sns.scatterplot(x="PC1", y="PC2", data=df_pca, hue=df["target_name"])
+```
+![image](https://user-images.githubusercontent.com/73774284/172050170-9dd21f94-c6d3-46f0-a366-89d3c75e5473.png)
+
+## 主成分に関する用語
+![image](https://user-images.githubusercontent.com/73774284/172050205-1eaf9abf-4807-43a4-af8d-3fb5019affc4.png)
+
+```
+# 各主成分と元データの相関図
+# https://pythondatascience.plavox.info/seaborn/heatmap（ヒートマップの引数について）
+# https://qiita.com/kenichiro_nishioka/items/8e307e164a4e0a279734（figについての説明）
+import seaborn as sns
+fig = plt.figure(figsize=(8,6))
+ax = fig.add_subplot(111)
+sns.heatmap(pca.components_,
+           cmap="Blues",
+           annot=True,
+           annot_kws={"size": 14},
+           fmt=".2f",
+           xticklabels=["SepalLength", "SepalWidth", "PetalLength", "PetalLength"],
+           yticklabels=["PC1", "PC2", "PC3", "PC4"],
+           ax=ax)
+plt.show()
+```
